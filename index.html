@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REUSE.IQ</title>
+<meta name="description" content="A research-grade, citable database of 810 circular-economy and reuse organisations worldwide.">
+<link rel="icon" href="assets/reuse-logo.png" type="image/png">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="brand-block">
+    <span class="brand"><span class="brand-reuse">REUSE</span><span class="brand-iq">.IQ</span></span>
+    <p class="tagline">REUSE Foundation’s database of over 800 reuse businesses worldwide helping prevent plastic waste</p>
+  </div>
+</header>
+<div class="banner-notice">
+  <p>📋 Spot an error, or know an organisation we're missing? <a href="https://docs.google.com/forms/d/e/1FAIpQLSe_flqrEXOmmf-IfqSQGh_H-9qflTSvqqopmbcNpWj_QB9rvg/viewform">Report a correction</a> · <a href="https://docs.google.com/forms/d/e/1FAIpQLSd1e4e8IPGx8PdBmmNGUbQ0RonYZuTFBcnPsP8cJoESxbl8JA/viewform">Suggest a new organisation</a>. And if you have suggestions on how to improve this database, please share your <a href="https://docs.google.com/forms/d/e/1FAIpQLSf_8itKRYGlxBONOcUcPkZ9TVUiyH7RMpN22xXIu736N0BRrw/viewform">recommendations</a>.</p>
+</div>
+<main class="index">
+  <div class="hero-row">
+    <div class="hero-copy">
+      <p class="subtitle"><b>Welcome to REUSE.IQ</b>, a global database of reuse solutions. Thank you for your interest!</p>
+      <p class="subtitle">It’s currently in beta as we expand its reach and improve the quality of the data it holds - if you see an error or want to suggest a new organisation, please use the links above</p>
+      <p class="subtitle">Also, we are actively talking to some organisations to prepare case studies that showcase their work and how they can prevent plastic waste. If you are interested in working with us to prepare one, please <a href="https://docs.google.com/forms/d/e/1FAIpQLSc3Zk8OCuw2pbU9d_G2XjV2rre8wgEsDIaI64cga7ApmZayXA/viewform">complete this form</a>.</p>
+    </div>
+    <div class="map-preview-card" id="preview-card" tabindex="0" role="button" aria-label="Open full map of reuse organisations">
+      <div id="preview-map"></div>
+      <div class="preview-overlay">
+        <span class="preview-stat"><strong>804</strong>organisations</span>
+        <span class="expand-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+          </svg>
+          Click to expand
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div id="summary" class="summary"></div>
+
+  <div class="panel">
+    <div class="controls">
+      <div class="control">
+        <label for="search">Search</label>
+        <input type="search" id="search" placeholder="Name, country, category, summary…" autocomplete="off">
+      </div>
+      <div class="control">
+        <label for="country-filter">Country</label>
+        <select id="country-filter"><option value="">All countries</option></select>
+      </div>
+    </div>
+    <div class="status-legend">
+      <span class="legend-row"><span class="legend-dot status-active"></span> Blue/default — Confirmed or presumed active</span>
+      <span class="legend-row"><span class="legend-dot status-warn"></span> Amber — Status uncertain or unverified</span>
+      <span class="legend-row"><span class="legend-dot status-bad"></span> Red — Reported closed, inactive, or in liquidation</span>
+    </div>
+    <div class="actions">
+      <div class="view-tabs">
+        <button id="cardBtn" class="active" onclick="setView('cards')">Card view</button>
+        <button id="tableBtn" onclick="setView('table')">Table view</button>
+      </div>
+      <button class="secondary" onclick="resetFilters()">Reset filters</button>
+      <span id="result-count" class="result-count"></span>
+    </div>
+  </div>
+
+  <div id="cards" class="cards"></div>
+
+  <div id="tableWrap" class="table-wrap hidden">
+    <table id="org-table">
+      <thead>
+        <tr>
+          <th data-key="name" class="sortable">Organisation</th>
+          <th data-key="country" class="sortable">Country</th>
+          <th data-key="categories">Categories</th>
+          <th data-key="year" class="sortable">Founded</th>
+          <th data-key="status" class="sortable">Status</th>
+        </tr>
+      </thead>
+      <tbody id="org-table-body"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="map-modal" id="map-modal" role="dialog" aria-modal="true" aria-label="Interactive map of reuse organisations">
+  <div class="map-modal-backdrop" id="modal-backdrop"></div>
+  <div class="map-modal-panel">
+    <div class="modal-header">
+      <h2 class="modal-title">Reuse organisations <span class="count" id="visible-count">804</span></h2>
+      <div class="modal-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+        </svg>
+        <input type="text" id="map-search" placeholder="Filter by name, country or category&hellip;" />
+      </div>
+      <button class="modal-close" id="modal-close" aria-label="Close map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="full-map"></div>
+      <div class="legend">
+        <div class="legend-row"><span class="legend-dot city"></span> Precise location known</div>
+        <div class="legend-row"><span class="legend-dot country"></span> Country-level estimate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>Data generated from <a href="data/REUSE_V5_Master.csv">REUSE_V5_Master.csv</a>. Last built: 2026-08-19.</p>
+  <p class="footer-note">Help us keep this database accurate and complete. Use the links above to report corrections or suggest organisations we've missed — every submission is reviewed before being added.</p>
+  <p class="footer-version">Version: 1.0.02, last updated 17 August 2026</p>
+</footer>
+<script src="assets/data.js"></script>
+<script src="assets/site.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<script src="assets/map.js"></script>
+</body>
+</html>
